@@ -1,0 +1,35 @@
+# 文档和说明
+*.md
+!README.md
+docs/
+
+# Git
+.git
+.gitignore
+
+# 测试
+*.test.*
+*.spec.*
+__tests__/
+
+# 日志
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 本地环境变量（Vercel 使用自己的环境变量）
+.env.local
+.env*.local
+
+# 临时文件
+*.tmp
+.DS_Store
+
+# 其他不需要部署的文件
+MILESTONES.md
+VERCEL_DEPLOY_CHECKLIST.md
+index.html
