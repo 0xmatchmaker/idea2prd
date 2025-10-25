@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>你的过程性评估小助手 - MVP体验版</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <style>
+      :root {
+        --bg: #0e1013;
+        --panel: #151922;
+        --accent: #3b82f6;
+        --accent-2: #22c55e;
+        --muted: #9aa4b2;
+        --text: #e5e7eb;
+        --warn: #f59e0b;
+        --del: #ef4444;
+      }
+      html, body { height: 100%; }
+      body {
+        margin: 0; padding: 0; background: var(--bg); color: var(--text);
+        font: 14px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+      }
+      .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+      header h1 { font-size: 22px; margin: 0 0 8px; }
+      header p { margin: 0 0 16px; color: var(--muted); }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .panel { background: var(--panel); border: 1px solid #232837; border-radius: 10px; padding: 12px; }
+      .panel h3 { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+      textarea {
+        width: 100%; min-height: 220px; resize: vertical; box-sizing: border-box; color: var(--text);
+        background: #0f1420; border: 1px solid #2a3346; border-radius: 8px; padding: 10px; outline: none;
+      }
+      textarea::placeholder { color: #5c6a85; }
+      .toolbar { display: flex; gap: 8px; align-items: center; margin: 10px 0 0; }
+      button {
+        background: var(--accent); color: white; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer;
+      }
+      .btn-ghost { background: transparent; color: var(--muted); border: 1px solid #2a3346; }
+      .btn-green { background: var(--accent-2); }
+      .btn-warn { background: var(--warn); color: #111827; }
+
+      .report { margin-top: 16px; }
+      .report .card { padding: 12px; border-radius: 10px; background: #0f1420; border: 1px solid #232837; }
+      .report h3 { margin: 0 0 8px; font-size: 16px; }
+      .muted { color: var(--muted); }
+      .list { margin: 6px 0 0 18px; }
+      .list li { margin: 4px 0; }
+
+      .progress {
+        display: flex; align-items: center; gap: 10px; margin: 8px 0 0;
+      }
+      .bar { height: 10px; background: #101520; border: 1px solid #232837; border-radius: 999px; width: 60%; overflow: hidden; }
+      .bar > span { display: block; height: 100%; background: linear-gradient(90deg, #22c55e, #3b82f6); width: 0%; transition: width .4s ease; }
+      .index-badge { font-weight: 700; }
+
+      .diff { margin-top: 12px; }
+      .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .col h4 { margin: 0 0 8px; color: var(--muted); font-weight: 600; }
+      .diffbox {
+        background: #0f1420; border: 1px solid #232837; border-radius: 8px; padding: 10px; white-space: pre-wrap; overflow: auto; min-height: 180px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px;
+      }
+      mark.ins { background: rgba(34,197,94,.25); color: #c5f5d6; padding: 0 1px; border-radius: 2px; }
+      span.del { background: rgba(239,68,68,.18); color: #ffc1c1; text-decoration: line-through; }
+
+      footer { margin: 24px 0 16px; color: var(--muted); font-size: 12px; text-align: center; }
+      .hint { color: var(--muted); font-size: 12px; }
+    </style>
+    <!-- diff-match-patch from CDN (loaded at runtime in browser) -->
+    <script src="https://cdn.jsdelivr.net/npm/diff-match-patch@1.0.5/index.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>你的过程性评估小助手 - MVP体验版</h1>
+        <p class="muted">粘贴学生初稿与终稿，一键生成“进步报告”。</p>
+      </header>
+
+      <section class="grid">
+        <div class="panel">
+          <h3>粘贴学生初稿到这里</h3>
+          <textarea id="draft" placeholder="在此粘贴学生的初稿文本..."></textarea>
+          <div class="toolbar">
+            <button class="btn-ghost" id="fillSampleA">填充示例A</button>
+            <button class="btn-ghost" id="fillSampleB">填充示例B</button>
+            <span class="hint">或直接粘贴你的文本</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>粘贴学生终稿到这里</h3>
+          <textarea id="final" placeholder="在此粘贴学生的终稿文本..."></textarea>
+          <div class="toolbar">
+            <button class="btn-green" id="run">一键生成进步报告</button>
+            <button class="btn-ghost" id="clear">清空</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="report" id="report" hidden>
+        <div class="card">
+          <h3>进步亮点</h3>
+          <ul class="list" id="insights"></ul>
+          <div class="progress">
+            <div class="bar"><span id="bar"></span></div>
+            <div class="index-badge" id="idx">进步指数：0%</div>
+          </div>
+        </div>
+
+        <div class="diff">
+          <div class="cols">
+            <div class="col">
+              <h4>初稿</h4>
+              <div class="diffbox" id="left"></div>
+            </div>
+            <div class="col">
+              <h4>终稿（新增高亮）</h4>
+              <div class="diffbox" id="right"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>此演示仅用于 MVP 体验，指标与结论为启发式估计。</span>
+      </footer>
+    </div>
+
+    <script>
+      // Simple helpers
+      const $ = (id) => document.getElementById(id);
+
+      const SECTION_HEADINGS = [
+        '摘要','引言','背景','研究背景','相关工作','方法','研究方法','实验','结果','讨论','分析','结论','参考文献','致谢'
+      ];
+
+      function splitLines(text) {
+        const lines = text.split(/\r?\n/);
+        let offset = 0;
+        return lines.map((t) => {
+          const start = offset;
+          offset += t.length + 1; // include newline
+          return { text: t, start, end: offset };
+        });
+      }
+
+      function detectSections(text) {
+        const lines = splitLines(text);
+        const sec = [];
+        for (let i=0; i<lines.length; i++) {
+          const raw = lines[i].text.trim();
+          const clean = raw.replace(/[：:]+$/, '');
+          if (SECTION_HEADINGS.includes(clean)) {
+            sec.push({ name: clean, start: lines[i].start, line: i+1 });
+          }
+        }
+        // Always add a root section
+        sec.unshift({ name: '正文', start: 0, line: 1 });
+        sec.sort((a,b)=>a.start-b.start);
+        return {
+          list: sec,
+          locate(pos){
+            let cur = sec[0];
+            for (const s of sec) if (s.start <= pos) cur = s; else break;
+            return cur;
+          }
+        };
+      }
+
+      function toHTMLFromDiffsForLeft(diffs) {
+        // Left shows original; optional: show deletions with red strikethrough
+        const out = [];
+        for (const [op, data] of diffs) {
+          if (op === 0) out.push(escapeHTML(data));
+          else if (op === -1) out.push('<span class="del">'+escapeHTML(data)+'</span>');
+          // insertions don't exist in left doc
+        }
+        return out.join('');
+      }
+
+      function toHTMLFromDiffsForRight(diffs) {
+        // Right shows final with insertions highlighted
+        const out = [];
+        for (const [op, data] of diffs) {
+          if (op === 0) out.push(escapeHTML(data));
+          else if (op === 1) out.push('<mark class="ins">'+escapeHTML(data)+'</mark>');
+          // deletions are absent in final doc
+        }
+        return out.join('');
+      }
+
+      function escapeHTML(s){
+        return s
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function analyzeInsertions(diffs, finalText) {
+        // Walk diffs and collect insertion chunks with their positions in finalText
+        let posFinal = 0; // position in final
+        let posDraft = 0;
+        const chunks = [];
+        for (const [op, data] of diffs) {
+          if (op === 0) { posFinal += data.length; posDraft += data.length; }
+          else if (op === -1) { posDraft += data.length; }
+          else if (op === 1) {
+            chunks.push({ start: posFinal, end: posFinal + data.length, len: data.length, text: data });
+            posFinal += data.length;
+          }
+        }
+        const sections = detectSections(finalText);
+        const features = chunks.map(ch => enrichChunk(ch, finalText, sections));
+        return { chunks: features, sections };
+      }
+
+      function enrichChunk(ch, finalText, sections) {
+        const sec = sections.locate(ch.start);
+        const snippet = ch.text;
+        const hasCite = /\((?:[A-Z][a-zA-Z]+|[\u4e00-\u9fa5]{2,})(?:,?\s*20\d{2})\)/.test(snippet)
+          || /\[\d+\]/.test(snippet);
+        const hasNumber = /\d{2,}/.test(snippet) || /%|％/.test(snippet);
+        const hasExample = /(例如|例如：|举例|案例|case|例如,)/i.test(snippet);
+        const refLike = /(APA|参考文献|doi|DOI|\d{4}\)\.|\(\d{4}\))/.test(snippet) || sec.name === '参考文献';
+        const figTable = /(图\s*\d+|表\s*\d+|Figure|Table)/i.test(snippet);
+
+        // label
+        let label = '内容完善';
+        if ((sec.name === '结论' || sec.name === '讨论') && ch.len >= 120) label = '逻辑深化';
+        else if (refLike || (sec.name === '参考文献')) label = '格式规范';
+        else if (hasCite || hasNumber || hasExample || figTable) label = '证据补充';
+        else if (sec.name.includes('方法') || sec.name === '实验') label = '方法完善';
+
+        // Score for sorting insights
+        const secWeight = (sec.name === '结论') ? 40 : (sec.name === '讨论') ? 30 : (/方法|实验/.test(sec.name) ? 24 : (/结果|分析/.test(sec.name) ? 22 : 10));
+        let bonus = 0; if (hasCite) bonus += 20; if (hasNumber) bonus += 10; if (hasExample) bonus += 10; if (figTable) bonus += 10; if (refLike) bonus += 16;
+        const score = ch.len + secWeight + bonus;
+
+        return { ...ch, section: sec.name, score, hasCite, hasNumber, hasExample, refLike, figTable };
+      }
+
+      function summarizeInsights(chunks, finalText) {
+        if (!chunks.length) return [];
+        const sorted = [...chunks].sort((a,b)=>b.score - a.score);
+        const top = sorted.slice(0, 3);
+        const lines = splitLines(finalText);
+        function locateLine(pos){
+          // binary search could be used; linear is fine for MVP
+          for (let i=0; i<lines.length; i++) {
+            if (pos < lines[i].end) return i+1;
+          }
+          return lines.length;
+        }
+        return top.map(ch => {
+          // sentence templates
+          const locLine = locateLine(ch.start);
+          const approx = ch.len;
+          const where = ch.section === '正文' ? `第${locLine}行附近` : ch.section + '部分';
+          let lead = '内容完善';
+          if ((ch.section === '结论' || ch.section === '讨论') && ch.len >= 120) lead = '逻辑深化';
+          else if (ch.refLike) lead = '格式规范';
+          else if (ch.hasCite || ch.hasNumber || ch.hasExample || ch.figTable) lead = '证据补充';
+          else if (/方法|实验/.test(ch.section)) lead = '方法完善';
+
+          let detail = '新增了较为完整的内容，增强了可读性与论证。';
+          if (lead === '逻辑深化') detail = '新增了较为深入的分析与推理，提升论证力度。';
+          if (lead === '证据补充') detail = '补充了数据/引用/案例作为支撑，使论证更有根据。';
+          if (lead === '格式规范') detail = '参考文献/格式得到统一与规范化。';
+          if (lead === '方法完善') detail = '对研究方法/实验步骤做出更完整说明。';
+
+          return `${lead}：在${where}，新增约${approx}字，${detail}`;
+        });
+      }
+
+      function calcProgressIndex(chunks, finalText) {
+        const totalAdd = chunks.reduce((s,c)=>s+c.len,0);
+        const base = Math.min(95, Math.round((totalAdd / Math.max(1, finalText.length)) * 100));
+        const touched = new Set(chunks.map(c=>c.section)).size;
+        const boosted = Math.min(95, Math.max(5, Math.round(base + Math.min(10, touched*3))));
+        // Round to nearest 5 for nicer look
+        return Math.min(95, Math.max(0, Math.round(boosted/5)*5));
+      }
+
+      function runAnalysis() {
+        if (typeof diff_match_patch === 'undefined') {
+          alert('未能加载 diff-match-patch 库，请联网后刷新再试。');
+          return;
+        }
+        const t1 = $('draft').value || '';
+        const t2 = $('final').value || '';
+        const dmp = new diff_match_patch();
+        const diffs = dmp.diff_main(t1, t2);
+        dmp.diff_cleanupSemantic(diffs);
+
+        const leftHTML = toHTMLFromDiffsForLeft(diffs);
+        const rightHTML = toHTMLFromDiffsForRight(diffs);
+        $('left').innerHTML = leftHTML;
+        $('right').innerHTML = rightHTML;
+
+        const { chunks } = analyzeInsertions(diffs, t2);
+        const insights = summarizeInsights(chunks, t2);
+        const idx = calcProgressIndex(chunks, t2);
+
+        $('insights').innerHTML = insights.length ? insights.map(x=>`<li>${escapeHTML(x)}</li>`).join('') : '<li class="muted">未检测到明显新增内容。</li>';
+        $('bar').style.width = idx + '%';
+        $('idx').textContent = `进步指数：${idx}%`;
+
+        $('report').hidden = false;
+      }
+
+      function clearAll(){ $('draft').value=''; $('final').value=''; $('report').hidden=true; }
+
+      // Sample texts for one-click demo
+      const SAMPLE_A_DRAFT = `标题：高校新生适应性的影响因素研究\n\n摘要\n本研究探讨高校新生适应性的主要影响因素。\n\n引言\n现有研究多关注学习动机，但对支持系统、时间管理等因素关注不足。\n\n方法\n采用问卷法收集数据，共回收有效问卷320份。\n\n结果\n描述性统计显示，学习动机得分较高。\n\n结论\n学习动机对新生适应性有正向影响。\n\n参考文献`;
+
+      const SAMPLE_A_FINAL = `标题：高校新生适应性的影响因素研究\n\n摘要\n本研究探讨高校新生适应性的主要影响因素，重点分析学习动机、社会支持与时间管理三类变量。\n\n引言\n现有研究多关注学习动机，但对支持系统、时间管理等因素关注不足。为弥补这一缺口，本文在以往文献基础上提出综合模型。\n\n方法\n采用问卷法收集数据，共回收有效问卷320份。量表来源于国内外成熟研究，并在预调查后进行信度检验（Cronbach's α=0.87）。\n\n结果\n描述性统计显示，学习动机得分较高。进一步的回归分析表明，社会支持与时间管理均显著预测适应性（p<.05），二者与学习动机存在交互作用。\n\n讨论\n从资源保存理论出发，社会支持可通过提升自我效能感促进适应（Bandura, 1997）。例如，在新生入学教育中引入朋辈导师制度，可提供及时反馈与情绪支持。\n\n结论\n学习动机对新生适应性有正向影响。与此同时，加入社会支持与时间管理变量后，模型解释力由R^2=.26提升至.41，表明多因素共同作用。\n\n参考文献\n[1] Bandura, A. (1997). Self-efficacy: The exercise of control.\n[2] 王明. (2018). 学习动机对大学生适应的影响. 教育研究.`;
+
+      const SAMPLE_B_DRAFT = `关于校园垃圾分类的倡议书\n\n引言\n校园垃圾分类推进缓慢，相关规范不统一。\n\n正文\n目前学生参与率不高，原因包括时间成本、设施不完善。\n\n结论\n需要加强宣传与监督。`;
+
+      const SAMPLE_B_FINAL = `关于校园垃圾分类的倡议书\n\n引言\n校园垃圾分类推进缓慢，相关规范不统一。本文旨在提出可执行的推进路径。\n\n正文\n目前学生参与率不高，原因包括时间成本、设施不完善。为提升参与度，建议在宿舍楼层设置可视化分类指引，增加可回收物智能投放点，并通过“绿色积分”制度对正确分类进行奖励。例如，每月统计所在班级人均积分并在学院公告栏公示。\n\n结论\n需要加强宣传与监督。新增措施包括：制定宿舍文明公约、设置每周检查与反馈机制，并在学期末评优中纳入垃圾分类表现。\n\n参考文献\n(示例) 生态文明教育指南（2023）`;
+
+      $('fillSampleA').addEventListener('click', () => { $('draft').value = SAMPLE_A_DRAFT; $('final').value = SAMPLE_A_FINAL; $('report').hidden = true; });
+      $('fillSampleB').addEventListener('click', () => { $('draft').value = SAMPLE_B_DRAFT; $('final').value = SAMPLE_B_FINAL; $('report').hidden = true; });
+      $('run').addEventListener('click', runAnalysis);
+      $('clear').addEventListener('click', clearAll);
+    </script>
+  </body>
+</html>
+
