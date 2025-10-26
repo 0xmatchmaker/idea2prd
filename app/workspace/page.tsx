@@ -27,6 +27,7 @@ import { compareWorkflows, generateDiffSummary } from '@/lib/workflow-diff'
 import { createClient } from '@/lib/supabase'
 import type { N8nWorkflow, WorkflowVersion, WorkflowDiff } from '@/types/workspace'
 import { WorkspaceNavbar } from '@/components/workspace-navbar'
+import { RequirementClarification } from '@/components/requirement-clarification'
 
 // 将 n8n 工作流转换为 React Flow 节点和边
 function workflowToReactFlow(workflow: N8nWorkflow, diff?: WorkflowDiff, showDeletedNodes?: boolean) {
@@ -467,6 +468,19 @@ export default function WorkspacePage() {
               </Button>
             </CardContent>
           </Card>
+
+          <Separator />
+
+          <RequirementClarification
+            description={description}
+            onComplete={(stories) => {
+              console.log('User stories generated:', stories)
+              toast({
+                title: '用户故事已生成',
+                description: `生成了 ${stories.length} 个用户故事`
+              })
+            }}
+          />
 
           <Separator />
 

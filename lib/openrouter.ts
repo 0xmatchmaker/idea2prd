@@ -296,3 +296,201 @@ export async function generateSceneImage(
     }
   }
 }
+
+/**
+ * 分析需求描述并提取关键信息
+ * 用于需求澄清功能
+ */
+export async function analyzeRequirement(description: string): Promise<any> {
+  const apiKey = getApiKey()
+
+  const isChinese = /[\u4e00-\u9fa5]/.test(description)
+
+  const systemPrompt = isChinese
+    ? `你是一个专业的需求分析师。分析用户的需求描述，提取关键角色和功能特性。
+
+请以 JSON 格式返回分析结果：
+{
+  "analysis": {
+    "roles": [
+      { "name": "角色名称", "confidence": "high|medium|low" }
+    ],
+    "features": [
+      { "name": "功能特性", "confidence": "high|medium|low" }
+    ]
+  }
+}
+
+置信度说明：
+- high: 需求中明确提到的
+- medium: 可以合理推断的
+- low: 可能需要但不确定的
+
+只返回 JSON，不要额外说明。`
+    : `You are a professional requirements analyst. Analyze the user's requirement description and extract key roles and features.
+
+Return the analysis in JSON format:
+{
+  "analysis": {
+    "roles": [
+      { "name": "role name", "confidence": "high|medium|low" }
+    ],
+    "features": [
+      { "name": "feature name", "confidence": "high|medium|low" }
+    ]
+  }
+}
+
+Confidence levels:
+- high: explicitly mentioned in the requirement
+- medium: can be reasonably inferred
+- low: might be needed but uncertain
+
+Return ONLY JSON, no additional explanations.`
+
+  try {
+    const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : '',
+        'X-Title': 'idea2prd'
+      },
+      body: JSON.stringify({
+        model: DEFAULT_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: description }
+        ],
+        temperature: 0.5,
+        max_tokens: 2000
+      })
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`OpenRouter API error: ${error}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices[0]?.message?.content
+
+    if (!content) {
+      throw new Error('No response from AI')
+    }
+
+    // 提取 JSON
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/```\n([\s\S]*?)\n```/)
+    const jsonString = jsonMatch ? jsonMatch[1] : content
+    const result = JSON.parse(jsonString.trim())
+
+    return {
+      analysis: result.analysis,
+      rawResponse: content
+    }
+  } catch (error) {
+    console.error('Error analyzing requirement:', error)
+    throw error
+  }
+}
+
+/**
+ * 根据角色和功能生成用户故事
+ */
+export async function generateUserStories(
+  roles: string[],
+  features: string[]
+): Promise<any> {
+  const apiKey = getApiKey()
+
+  const isChinese = /[\u4e00-\u9fa5]/.test(roles.join('') + features.join(''))
+
+  const systemPrompt = isChinese
+    ? `你是一个敏捷开发专家。根据提供的角色和功能特性，生成用户故事。
+
+用户故事格式：作为【角色】，我想要【功能】，以便【价值】
+
+请以 JSON 格式返回：
+{
+  "stories": [
+    {
+      "role": "角色",
+      "feature": "功能",
+      "value": "价值"
+    }
+  ]
+}
+
+只返回 JSON，不要额外说明。`
+    : `You are an agile development expert. Generate user stories based on the provided roles and features.
+
+User story format: As a [role], I want to [feature], so that [value]
+
+Return in JSON format:
+{
+  "stories": [
+    {
+      "role": "role",
+      "feature": "feature",
+      "value": "value"
+    }
+  ]
+}
+
+Return ONLY JSON, no additional explanations.`
+
+  const userPrompt = isChinese
+    ? `角色：${roles.join('、')}\n功能：${features.join('、')}`
+    : `Roles: ${roles.join(', ')}\nFeatures: ${features.join(', ')}`
+
+  try {
+    const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : '',
+        'X-Title': 'idea2prd'
+      },
+      body: JSON.stringify({
+        model: DEFAULT_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`OpenRouter API error: ${error}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices[0]?.message?.content
+
+    if (!content) {
+      throw new Error('No response from AI')
+    }
+
+    // 提取 JSON
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/```\n([\s\S]*?)\n```/)
+    const jsonString = jsonMatch ? jsonMatch[1] : content
+    const result = JSON.parse(jsonString.trim())
+
+    return {
+      stories: result.stories,
+      formatted: result.stories.map((s: any) =>
+        isChinese
+          ? `作为${s.role}，我想要${s.feature}，以便${s.value}`
+          : `As a ${s.role}, I want to ${s.feature}, so that ${s.value}`
+      )
+    }
+  } catch (error) {
+    console.error('Error generating user stories:', error)
+    throw error
+  }
+}

@@ -75,3 +75,32 @@ export interface GenerateImageResponse {
   url: string
   prompt: string
 }
+
+// 需求澄清相关类型
+export type ConfidenceLevel = 'high' | 'medium' | 'low'
+
+export interface RequirementItem {
+  name: string
+  confidence: ConfidenceLevel
+}
+
+export interface RequirementAnalysis {
+  roles: RequirementItem[]
+  features: RequirementItem[]
+}
+
+export interface UserStory {
+  role: string
+  feature: string
+  value: string
+}
+
+export interface AnalyzeRequirementResponse {
+  analysis: RequirementAnalysis
+  rawResponse?: string
+}
+
+export interface GenerateUserStoriesResponse {
+  stories: UserStory[]
+  formatted: string[]
+}
