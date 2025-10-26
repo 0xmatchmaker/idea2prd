@@ -113,7 +113,7 @@ export default function WorkspacePage() {
   const [user, setUser] = useState<any>(null)
   const [projectId, setProjectId] = useState<string | null>(null)
 
-  // 工作流状态
+  // 需求流程图状态
   const [currentWorkflow, setCurrentWorkflow] = useState<N8nWorkflow | null>(null)
   const [versions, setVersions] = useState<WorkflowVersion[]>([])
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null)
@@ -191,7 +191,7 @@ export default function WorkspacePage() {
     }
   }, [selectedVersionId, versions, compareVersionId])
 
-  // 生成工作流
+  // 生成需求流程图
   const handleGenerate = useCallback(async () => {
     if (!description.trim()) {
       toast({ title: '请输入需求描述', variant: 'destructive' })
@@ -231,7 +231,7 @@ export default function WorkspacePage() {
       setEdges(flowEdges)
 
       toast({
-        title: '✨ 工作流生成成功',
+        title: '✨ 需求流程图生成成功',
         description: result.explanation
       })
     } catch (error) {
@@ -346,7 +346,7 @@ export default function WorkspacePage() {
   // 生成场景图
   const handleGenerateImage = useCallback(async () => {
     if (!currentWorkflow) {
-      toast({ title: '请先生成工作流', variant: 'destructive' })
+      toast({ title: '请先生成需求流程图', variant: 'destructive' })
       return
     }
 
@@ -380,7 +380,7 @@ export default function WorkspacePage() {
       <div className="border-b p-4 bg-background">
         <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold">Workflow Studio</h1>
+            <h1 className="text-xl font-bold">PRD 工作台</h1>
             <Badge variant="outline">
               {currentWorkflow?.nodes.length || 0} 节点
             </Badge>
@@ -442,7 +442,7 @@ export default function WorkspacePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
-                AI 生成工作流
+                AI 需求分析
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -456,12 +456,12 @@ export default function WorkspacePage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    生成中...
+                    分析中...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    生成工作流
+                    生成需求流程图
                   </>
                 )}
               </Button>
@@ -524,7 +524,7 @@ export default function WorkspacePage() {
           )}
         </div>
 
-        {/* 右侧：工作流可视化 */}
+        {/* 右侧：需求流程图可视化 */}
         <div className="flex-1 bg-gray-50 relative">
           <ReactFlow
             nodes={nodes}

@@ -13,7 +13,7 @@ function getApiKey(): string {
 }
 
 /**
- * 使用 AI 生成 n8n 工作流
+ * 使用 AI 生成需求流程图
  * @param description 用户的自然语言描述
  * @param context 可选的上下文信息
  */
@@ -23,17 +23,21 @@ export async function generateWorkflow(
 ): Promise<GenerateWorkflowResponse> {
   const apiKey = getApiKey()
 
-  const systemPrompt = `You are an expert n8n workflow designer. Your task is to convert natural language descriptions into valid n8n workflow JSON.
+  // 检测输入语言（简单判断：包含中文字符则为中文）
+  const isChinese = /[\u4e00-\u9fa5]/.test(description)
 
-n8n workflow structure:
+  const systemPrompt = isChinese
+    ? `你是一个专业的需求分析师和流程设计专家。你的任务是将自然语言需求描述转换为可视化的需求流程图（使用 n8n 格式的 JSON）。
+
+需求流程图结构：
 {
   "nodes": [
     {
       "id": "unique-id",
       "type": "n8n-nodes-base.webhook",
-      "name": "Webhook",
+      "name": "接收请求",
       "position": [250, 300],
-      "parameters": { /* node-specific config */ }
+      "parameters": { /* 节点配置 */ }
     }
   ],
   "connections": {
@@ -43,25 +47,62 @@ n8n workflow structure:
   }
 }
 
-Common n8n node types:
-- n8n-nodes-base.webhook: HTTP triggers
-- n8n-nodes-base.httpRequest: Make HTTP requests
-- n8n-nodes-base.function: JavaScript code
-- n8n-nodes-base.if: Conditional logic
-- n8n-nodes-base.set: Transform data
-- n8n-nodes-base.switch: Multiple conditions
-- n8n-nodes-base.code: Advanced code execution
+常用节点类型（请使用中文名称）：
+- n8n-nodes-base.webhook: "接收请求" / "触发器"
+- n8n-nodes-base.httpRequest: "API调用" / "HTTP请求"
+- n8n-nodes-base.function: "数据处理" / "业务逻辑"
+- n8n-nodes-base.if: "条件判断" / "分支判断"
+- n8n-nodes-base.set: "数据转换" / "设置数据"
+- n8n-nodes-base.switch: "多条件分支"
+- n8n-nodes-base.code: "代码执行"
+
+重要规则：
+1. 只返回有效的 JSON（不要用 markdown 代码块，不要有额外说明）
+2. 使用顺序 ID："node-1", "node-2" 等
+3. 节点横向排列：[250, 300], [450, 300], [650, 300] 等
+4. 按顺序连接节点
+5. 节点名称必须使用中文，简洁清晰地描述功能
+6. 保持简单实用，突出需求要点`
+    : `You are an expert requirements analyst and process designer. Your task is to convert natural language requirement descriptions into visual requirement flow diagrams (using n8n format JSON).
+
+Requirement flow diagram structure:
+{
+  "nodes": [
+    {
+      "id": "unique-id",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Receive Request",
+      "position": [250, 300],
+      "parameters": { /* node config */ }
+    }
+  ],
+  "connections": {
+    "node-id": {
+      "main": [[{ "node": "next-node-id", "type": "main", "index": 0 }]]
+    }
+  }
+}
+
+Common node types (use English names):
+- n8n-nodes-base.webhook: "Receive Request" / "Trigger"
+- n8n-nodes-base.httpRequest: "API Call" / "HTTP Request"
+- n8n-nodes-base.function: "Process Data" / "Business Logic"
+- n8n-nodes-base.if: "Conditional Check" / "Branch Decision"
+- n8n-nodes-base.set: "Transform Data" / "Set Data"
+- n8n-nodes-base.switch: "Multiple Branches"
+- n8n-nodes-base.code: "Execute Code"
 
 IMPORTANT:
 1. Return ONLY valid JSON (no markdown, no explanations outside JSON)
 2. Use sequential IDs like "node-1", "node-2", etc.
 3. Position nodes horizontally: [250, 300], [450, 300], [650, 300], etc.
 4. Connect nodes in sequence
-5. Keep it simple and practical`
+5. Node names must be in English, clearly describing the function
+6. Keep it simple and practical, highlighting key requirements`
 
   const userPrompt = context
-    ? `Context: ${context}\n\nGenerate an n8n workflow for: ${description}`
-    : `Generate an n8n workflow for: ${description}`
+    ? `Context: ${context}\n\n${isChinese ? '生成需求流程图' : 'Generate requirement flow diagram'}: ${description}`
+    : `${isChinese ? '生成需求流程图' : 'Generate requirement flow diagram'}: ${description}`
 
   try {
     const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
