@@ -1,4 +1,4 @@
-import type { N8nWorkflow, GenerateWorkflowResponse, GenerateImageResponse } from '@/types/workspace'
+import type { N8nWorkflow, GenerateWorkflowResponse, GenerateImageResponse, Blueprint, UserStory } from '@/types/workspace'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1'
 const DEFAULT_MODEL = process.env.NEXT_PUBLIC_DEFAULT_AI_MODEL || 'anthropic/claude-3.5-sonnet'
@@ -391,6 +391,175 @@ Return ONLY JSON, no additional explanations.`
     }
   } catch (error) {
     console.error('Error analyzing requirement:', error)
+    throw error
+  }
+}
+
+/**
+ * 基于用户故事生成产品蓝图
+ */
+export async function generateBlueprint(
+  description: string,
+  userStories?: UserStory[]
+): Promise<{ blueprint: Blueprint; explanation?: string }> {
+  const apiKey = getApiKey()
+
+  const isChinese = /[\u4e00-\u9fa5]/.test(description)
+
+  const systemPrompt = isChinese
+    ? `你是一个专业的产品架构师。根据需求描述和用户故事，生成详细的产品蓝图（增强版 n8n 格式）。
+
+蓝图结构：
+{
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "n8n-nodes-base.webhook",
+      "name": "接收请求",
+      "position": [250, 300],
+      "parameters": {},
+      "priority": "P0",  // P0=MVP必需，P1=重要，P2=增强，P3=未来
+      "groupId": "group-1",  // 所属模块
+      "userStoryIds": ["story-0", "story-1"],  // 关联的用户故事
+      "technicalNotes": "使用 REST API，需要验证 token"
+    }
+  ],
+  "connections": {
+    "node-1": {
+      "main": [[{ "node": "node-2", "type": "main", "index": 0 }]]
+    }
+  },
+  "groups": [
+    {
+      "id": "group-1",
+      "name": "用户模块",
+      "type": "module",
+      "color": "#10b981",
+      "nodeIds": ["node-1", "node-2"]
+    }
+  ],
+  "stickyNotes": [
+    {
+      "id": "note-1",
+      "content": "这个模块负责用户认证和授权",
+      "position": [100, 200],
+      "color": "#fef3c7"
+    }
+  ]
+}
+
+重要规则：
+1. 只返回有效的 JSON
+2. 为每个节点标记优先级（MVP功能标记为P0）
+3. 使用分组组织相关节点
+4. 添加便签说明关键设计决策
+5. 在 technicalNotes 中添加技术细节
+6. 使用 userStoryIds 关联用户故事
+
+只返回 JSON，不要额外说明。`
+    : `You are a professional product architect. Generate a detailed product blueprint (enhanced n8n format) based on requirements and user stories.
+
+Blueprint structure:
+{
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Receive Request",
+      "position": [250, 300],
+      "parameters": {},
+      "priority": "P0",  // P0=MVP, P1=Important, P2=Enhancement, P3=Future
+      "groupId": "group-1",
+      "userStoryIds": ["story-0", "story-1"],
+      "technicalNotes": "Use REST API, token validation required"
+    }
+  ],
+  "connections": {
+    "node-1": {
+      "main": [[{ "node": "node-2", "type": "main", "index": 0 }]]
+    }
+  },
+  "groups": [
+    {
+      "id": "group-1",
+      "name": "User Module",
+      "type": "module",
+      "color": "#10b981",
+      "nodeIds": ["node-1", "node-2"]
+    }
+  ],
+  "stickyNotes": [
+    {
+      "id": "note-1",
+      "content": "This module handles user authentication",
+      "position": [100, 200],
+      "color": "#fef3c7"
+    }
+  ]
+}
+
+IMPORTANT:
+1. Return ONLY valid JSON
+2. Mark priority for each node (MVP features as P0)
+3. Use groups to organize related nodes
+4. Add sticky notes for key design decisions
+5. Add technical details in technicalNotes
+6. Link user stories with userStoryIds
+
+Return ONLY JSON, no additional explanations.`
+
+  const userPrompt = userStories
+    ? `需求：${description}\n\n用户故事：\n${userStories.map((s, i) => `${i}. 作为${s.role}，我想要${s.feature}，以便${s.value}`).join('\n')}`
+    : description
+
+  try {
+    const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : '',
+        'X-Title': 'idea2prd'
+      },
+      body: JSON.stringify({
+        model: DEFAULT_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 6000
+      })
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`OpenRouter API error: ${error}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices[0]?.message?.content
+
+    if (!content) {
+      throw new Error('No response from AI')
+    }
+
+    // 提取 JSON
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/```\n([\s\S]*?)\n```/)
+    const jsonString = jsonMatch ? jsonMatch[1] : content
+    const blueprint = JSON.parse(jsonString.trim())
+
+    // 验证结构
+    if (!blueprint.nodes || !Array.isArray(blueprint.nodes)) {
+      throw new Error('Invalid blueprint: missing nodes array')
+    }
+
+    return {
+      blueprint,
+      explanation: `Generated blueprint with ${blueprint.nodes.length} nodes, ${blueprint.groups?.length || 0} groups, ${blueprint.stickyNotes?.length || 0} notes`
+    }
+  } catch (error) {
+    console.error('Error generating blueprint:', error)
     throw error
   }
 }

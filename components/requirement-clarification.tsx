@@ -11,7 +11,7 @@ import type { RequirementAnalysis, UserStory, ConfidenceLevel } from '@/types/wo
 
 interface RequirementClarificationProps {
   description: string
-  onComplete?: (userStories: string[]) => void
+  onComplete?: (userStories: UserStory[]) => void
 }
 
 export function RequirementClarification({ description, onComplete }: RequirementClarificationProps) {
@@ -57,7 +57,7 @@ export function RequirementClarification({ description, onComplete }: Requiremen
       setUserStories(result.stories)
 
       if (onComplete) {
-        onComplete(result.formatted)
+        onComplete(result.stories)
       }
     } catch (error) {
       console.error('Story generation error:', error)
