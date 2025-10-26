@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Sparkles, BookOpen, Map } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useLocale } from './locale-provider'
 
 import { RequirementClarification } from './requirement-clarification'
 import { UserStoryBoard } from './user-story-board'
@@ -15,18 +16,34 @@ import { BlueprintEditor } from './blueprint-editor'
 import { ExportDialog } from './export-dialog'
 
 import { generateBlueprint } from '@/lib/openrouter'
+import { templates } from '@/lib/examples'
 import type { Blueprint, UserStory } from '@/types/workspace'
 
 interface WorkspaceContainerProps {
   projectId: string
   projectName?: string
+  templateId?: string
 }
 
-export function WorkspaceContainer({ projectId, projectName }: WorkspaceContainerProps) {
+export function WorkspaceContainer({ projectId, projectName, templateId }: WorkspaceContainerProps) {
   const { toast } = useToast()
+  const { locale } = useLocale()
 
   // 需求描述
   const [description, setDescription] = useState('')
+
+  // 当有模板 ID 时，自动填充模板内容
+  useEffect(() => {
+    if (templateId && templates[templateId]) {
+      const template = templates[templateId][locale]
+      setDescription(template.description)
+
+      toast({
+        title: '模板已加载',
+        description: '您可以直接使用或修改模板内容',
+      })
+    }
+  }, [templateId, locale, toast])
 
   // 用户故事
   const [userStories, setUserStories] = useState<UserStory[]>([])

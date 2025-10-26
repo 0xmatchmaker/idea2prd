@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh" suppressHydrationWarning>
+    <html lang="zh" suppressHydrationWarning className="scroll-smooth">
       <body className={inter.className}>
         <LocaleProvider>
           <ConditionalLayout>{children}</ConditionalLayout>

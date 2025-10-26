@@ -1,5 +1,75 @@
 import type { PRDData } from "./types"
 
+// 模板定义接口
+export interface TemplateData {
+  id: string
+  description: string // 用于填充到 workspace 的需求描述
+}
+
+// 简短模板数据（用于 workspace 自动填充）
+export const templates: Record<string, { zh: TemplateData; en: TemplateData }> = {
+  ecommerce: {
+    zh: {
+      id: "ecommerce",
+      description: "我想做一个电商系统，用户可以浏览商品、加入购物车、完成支付。需要包含商品列表展示、购物车管理、订单结算、支付集成（支付宝/微信）、订单查询等功能。用户体验要流畅，支付要安全可靠。"
+    },
+    en: {
+      id: "ecommerce",
+      description: "I want to build an e-commerce system where users can browse products, add to cart, and complete payment. Need features like product listing, cart management, checkout, payment integration (Alipay/WeChat), and order tracking. User experience should be smooth and payment secure."
+    }
+  },
+  education: {
+    zh: {
+      id: "education",
+      description: "我想做一个在线教育平台，教师可以创建课程、上传资料，学生可以学习课程、提交作业、查看成绩。需要课程管理、视频播放、作业系统、成绩统计、学习进度追踪等功能。"
+    },
+    en: {
+      id: "education",
+      description: "I want to build an online education platform where teachers can create courses and upload materials, students can learn, submit homework, and check grades. Need course management, video playback, homework system, grade statistics, and learning progress tracking."
+    }
+  },
+  social: {
+    zh: {
+      id: "social",
+      description: "我想做一个社交应用，用户可以发布动态、点赞评论、关注好友、私信聊天。需要动态发布、图片上传、评论互动、关注系统、消息通知、个人主页等功能。界面要简洁美观，互动要实时流畅。"
+    },
+    en: {
+      id: "social",
+      description: "I want to build a social app where users can post updates, like and comment, follow friends, and chat privately. Need post publishing, image upload, comment interaction, follow system, message notifications, and personal profiles. UI should be clean and interactions real-time."
+    }
+  },
+  saas: {
+    zh: {
+      id: "saas",
+      description: "我想做一个 SaaS 团队协作工具，支持团队管理、成员邀请、权限控制、数据仪表盘。需要组织架构管理、角色权限配置、数据统计图表、API 访问控制等功能。要支持多租户隔离，数据安全可靠。"
+    },
+    en: {
+      id: "saas",
+      description: "I want to build a SaaS team collaboration tool with team management, member invitations, permission control, and data dashboard. Need org structure management, role-based access control, data analytics charts, API access control. Multi-tenant isolation and data security required."
+    }
+  },
+  payment: {
+    zh: {
+      id: "payment",
+      description: "我想做一个支付订阅系统，用户可以订阅服务、管理订阅、查看账单。需要订单创建、支付处理（接入 Creem/Stripe）、订阅管理、自动续费、退款流程、发票生成等功能。支付要安全，订阅管理要清晰。"
+    },
+    en: {
+      id: "payment",
+      description: "I want to build a payment subscription system where users can subscribe to services, manage subscriptions, and view bills. Need order creation, payment processing (Creem/Stripe integration), subscription management, auto-renewal, refund flow, invoice generation. Payment must be secure and subscription management clear."
+    }
+  },
+  ai: {
+    zh: {
+      id: "ai",
+      description: "我想做一个 AI 助手工具，用户输入需求，AI 生成内容（文案/代码/图片等）。需要需求输入、AI 模型调用、结果展示、历史记录、导出功能、效果优化迭代。要支持多种 AI 模型选择，生成速度要快。"
+    },
+    en: {
+      id: "ai",
+      description: "I want to build an AI assistant tool where users input requirements and AI generates content (copy/code/images). Need requirement input, AI model invocation, result display, history, export function, and iterative optimization. Support multiple AI models and fast generation speed."
+    }
+  }
+}
+
 export const examples: Record<string, { zh: PRDData; en: PRDData }> = {
   "boss-simulator": {
     zh: {

@@ -22,7 +22,7 @@ export function Navbar() {
           <Link href="/#features" className="text-sm font-medium hover:text-primary transition-colors">
             {t("nav.features")}
           </Link>
-          <Link href="/examples" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link href="/#examples" className="text-sm font-medium hover:text-primary transition-colors">
             {t("nav.examples")}
           </Link>
           <Link href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">

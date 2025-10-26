@@ -98,6 +98,171 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Examples Section */}
+      <section id="examples" className="py-20">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{t("nav.examples")}</h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          {t("examples.subtitle")}
+        </p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* E-commerce Template */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="text-4xl mb-2">🛒</div>
+              <CardTitle>{t("examples.ecommerce.title")}</CardTitle>
+              <CardDescription>{t("examples.ecommerce.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-600 mb-1">💡 {t("flow.step1.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.ecommerce.idea")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-blue-600 mb-1">📖 {t("flow.step2.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.ecommerce.story")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-green-600 mb-1">🎨 {t("flow.step3.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.ecommerce.blueprint")}</p>
+              </div>
+              <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/workspace?template=ecommerce">{t("examples.useTemplate")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Education Template */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="text-4xl mb-2">🎓</div>
+              <CardTitle>{t("examples.education.title")}</CardTitle>
+              <CardDescription>{t("examples.education.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-600 mb-1">💡 {t("flow.step1.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.education.idea")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-blue-600 mb-1">📖 {t("flow.step2.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.education.story")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-green-600 mb-1">🎨 {t("flow.step3.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.education.blueprint")}</p>
+              </div>
+              <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/workspace?template=education">{t("examples.useTemplate")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Social Template */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="text-4xl mb-2">💬</div>
+              <CardTitle>{t("examples.social.title")}</CardTitle>
+              <CardDescription>{t("examples.social.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-600 mb-1">💡 {t("flow.step1.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.social.idea")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-blue-600 mb-1">📖 {t("flow.step2.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.social.story")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-green-600 mb-1">🎨 {t("flow.step3.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.social.blueprint")}</p>
+              </div>
+              <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/workspace?template=social">{t("examples.useTemplate")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* SaaS Template */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="text-4xl mb-2">🏢</div>
+              <CardTitle>{t("examples.saas.title")}</CardTitle>
+              <CardDescription>{t("examples.saas.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-600 mb-1">💡 {t("flow.step1.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.saas.idea")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-blue-600 mb-1">📖 {t("flow.step2.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.saas.story")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-green-600 mb-1">🎨 {t("flow.step3.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.saas.blueprint")}</p>
+              </div>
+              <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/workspace?template=saas">{t("examples.useTemplate")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Payment Template */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="text-4xl mb-2">💰</div>
+              <CardTitle>{t("examples.payment.title")}</CardTitle>
+              <CardDescription>{t("examples.payment.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-600 mb-1">💡 {t("flow.step1.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.payment.idea")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-blue-600 mb-1">📖 {t("flow.step2.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.payment.story")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-green-600 mb-1">🎨 {t("flow.step3.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.payment.blueprint")}</p>
+              </div>
+              <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/workspace?template=payment">{t("examples.useTemplate")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* AI Assistant Template */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="text-4xl mb-2">🤖</div>
+              <CardTitle>{t("examples.ai.title")}</CardTitle>
+              <CardDescription>{t("examples.ai.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-600 mb-1">💡 {t("flow.step1.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.ai.idea")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-blue-600 mb-1">📖 {t("flow.step2.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.ai.story")}</p>
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-green-600 mb-1">🎨 {t("flow.step3.title").split("·")[0].trim()}</p>
+                <p className="text-muted-foreground">{t("examples.ai.blueprint")}</p>
+              </div>
+              <Button asChild variant="outline" className="w-full mt-4">
+                <Link href="/workspace?template=ai">{t("examples.useTemplate")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Simple Process Section */}
       <section className="py-20 bg-muted/50 -mx-4 px-4 rounded-lg">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{t("process.title")}</h2>

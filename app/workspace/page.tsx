@@ -1,13 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { getOrCreateDefaultProject } from '@/lib/db/projects'
 import { WorkspaceNavbar } from '@/components/workspace-navbar'
 import { WorkspaceContainer } from '@/components/workspace-container'
 import { Loader2 } from 'lucide-react'
 
-export default function WorkspacePage() {
+function WorkspacePageContent() {
+  const searchParams = useSearchParams()
+  const templateId = searchParams.get('template')
+
   const [user, setUser] = useState<any>(null)
   const [projectId, setProjectId] = useState<string | null>(null)
   const [projectName, setProjectName] = useState<string>('')
@@ -63,7 +67,20 @@ export default function WorkspacePage() {
       <WorkspaceContainer
         projectId={projectId}
         projectName={projectName}
+        templateId={templateId || undefined}
       />
     </>
+  )
+}
+
+export default function WorkspacePage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <WorkspacePageContent />
+    </Suspense>
   )
 }

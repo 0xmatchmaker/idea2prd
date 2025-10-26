@@ -65,13 +65,13 @@ export function AnimatedBackground() {
 
       newParticles.push({
         id: i,
-        size: Math.random() * 40 + 10, // 10-50px
+        size: Math.random() * 60 + 30, // 30-90px - 更大的粒子
         x: Math.random() * (xMax - xMin) + xMin,
         y: Math.random() * 100,
         duration: Math.random() * 10 + 10, // 10-20秒
         delay: Math.random() * 5, // 0-5秒延迟
         color,
-        opacity: Math.random() * 0.4 + 0.3 // 0.3-0.7
+        opacity: Math.random() * 0.3 + 0.5 // 0.5-0.8 - 更高的不透明度
       })
     }
 
@@ -90,14 +90,14 @@ export function AnimatedBackground() {
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden">
       {/* 基础渐变背景 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-green-50" />
+      <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/30 via-blue-50/30 to-green-50/30 dark:from-yellow-950/10 dark:via-blue-950/10 dark:to-green-950/10" />
 
       {/* 粒子层 */}
       <div className="absolute inset-0">
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className="particle absolute rounded-full blur-xl"
+            className="particle absolute rounded-full blur-2xl"
             style={{
               width: `${particle.size}px`,
               height: `${particle.size}px`,
@@ -112,8 +112,8 @@ export function AnimatedBackground() {
         ))}
       </div>
 
-      {/* 柔和的渐变叠加层 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+      {/* 柔和的渐变叠加层 - 减少底部遮罩 */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-transparent pointer-events-none" />
     </div>
   )
 }
