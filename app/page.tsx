@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, Lightbulb, BookOpen, Map } from "lucide-react"
 import { ThreeStepFlow } from "@/components/three-step-flow"
+import { AnimatedBackground } from "@/components/animated-background"
+import { HeroCTAButton } from "@/components/hero-cta-button"
 
 export default function HomePage() {
   const { t } = useLocale()
@@ -13,22 +15,36 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4">
       {/* Hero Section */}
-      <section className="py-20 md:py-32 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance leading-tight">
-          {t("hero.title")}
-        </h1>
-        <p className="text-2xl md:text-3xl text-primary/80 font-semibold mb-4">
-          {t("hero.subtitle")}
-        </p>
-        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
-          {t("hero.description")}
-        </p>
-        <Button asChild size="lg" className="gap-2">
-          <Link href="/workspace">
-            {t("hero.cta")}
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </Button>
+      <section className="relative py-24 md:py-40 text-center overflow-hidden">
+        {/* 动态粒子背景 */}
+        <AnimatedBackground />
+
+        {/* Hero 内容 */}
+        <div className="relative z-10 space-y-8">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-balance leading-tight">
+            {t("hero.title")}
+          </h1>
+
+          {/* 渐变副标题 */}
+          <p className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-blue-500 to-green-500">
+            {t("hero.subtitle")}
+          </p>
+
+          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto text-pretty">
+            {t("hero.description")}
+          </p>
+
+          {/* 超级 CTA 按钮 */}
+          <div className="flex flex-col items-center gap-4">
+            <HeroCTAButton href="/workspace">
+              🚀 {t("hero.cta")}
+            </HeroCTAButton>
+
+            <p className="text-sm text-muted-foreground">
+              不需要完整的需求，只需要一个想法
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Three Step Flow */}
